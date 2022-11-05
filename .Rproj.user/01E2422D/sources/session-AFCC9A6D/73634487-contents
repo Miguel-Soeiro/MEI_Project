@@ -1,0 +1,70 @@
+library(readr)
+
+x <- c(15, 20, 25, 30, 35, 40)
+# str1 = capture.output(getwd()) #workspace directory
+# str2 = "/alg" #filename
+
+
+dinic <- c()
+for (i in x) {
+    file <- sprintf("alg/vertices_50-prob_baixas/%d/Dinic_%d.txt", i, i)
+    conn <- file(file, open="rb")
+    lines <- read_lines(conn, n_max = 80)
+    times <- as.numeric(lines[seq(2, length(lines), 2)])
+    avg_time <- mean(times) * 1000000 # Seconds to microseconds
+    dinic <- c(dinic, avg_time)
+    close(conn)
+}
+
+ek <- c()
+for (i in x) {
+    file <- sprintf("alg/vertices_50-prob_baixas/%d/EK_%d.txt", i, i)
+    conn <- file(file, open="rb")
+    lines <- read_lines(conn, n_max = 80)
+    times <- as.numeric(lines[seq(2, length(lines), 2)])
+    avg_time <- mean(times) * 1000000 # Seconds to microseconds
+    ek <- c(ek, avg_time)
+    close(conn)
+}
+
+
+mpm <- c()
+for (i in x) {
+    file <- sprintf("alg/vertices_50-prob_baixas/%d/MPM_%d.txt", i, i)
+    conn <- file(file, open="rb")
+    lines <- read_lines(conn, n_max = 80)
+    times <- as.numeric(lines[seq(2, length(lines), 2)])
+    avg_time <- mean(times) * 1000000 # Seconds to microseconds
+    mpm <- c(mpm, avg_time)
+    close(conn)
+}
+
+dinic_lr <- lm(dinic ~ x)
+ek_lr <- lm(ek ~ x)
+mpm_lr <- lm(mpm ~ x)
+
+summary(ek_lr)
+summary(mpm_lr)
+summary(dinic_lr)
+
+# Make a empty plot
+plot(x, dinic, ylim = c(0, 200), xlab = "Probability", ylab = "Time (microseconds)")
+
+
+# Add the points
+points(x, dinic, col = "red", pch = 16, cex = 1.5)
+points(x, ek, col = "blue", pch = 16, cex = 1.5)
+points(x, mpm, col = "green", pch = 16, cex = 1.5)
+
+legend("topleft", legend = c("Dinic", "EK", "MPM"), col = c("red", "blue", "green"), pch = 12, cex = 1)
+
+
+# Add the linear regression lines
+abline(dinic_lr, col = "red", lwd = 2)
+abline(ek_lr, col = "blue", lwd = 2)
+abline(mpm_lr, col = "green", lwd = 2)
+
+# Write the equation to the lines
+text(10, 150, labels = sprintf("Dinic: %0.2f + %0.2f * x", dinic_lr$coefficients[1], dinic_lr$coefficients[2]), col = "red", cex=0.75, srt=15)
+text(10, 140, labels = sprintf("EK: %0.2f + %0.2f * x", ek_lr$coefficients[1], ek_lr$coefficients[2]), col = "blue",  cex=0.75, srt=22)
+text(35, 93, labels = sprintf("MPM: %0.2f + %0.2f * x", mpm_lr$coefficients[1], mpm_lr$coefficients[2]), col = "green",  cex=0.75, srt=15)
